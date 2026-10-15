@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Math Differentiator - Adaptive Learning Platform</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- KaTeX for rendering math formulas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .katex-display { margin: 0.5em 0; overflow-x: auto; overflow-y: hidden; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Navigation Header -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 p-2 rounded-xl text-white shadow-lg">
+                    <i class="fa-solid font-bold fa-brain text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-wide">AI Math Differentiator</h1>
+                    <p class="text-xs text-slate-400">Adaptive Learning for Differentiated Instruction</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button onclick="openReportModal()" class="flex items-center space-x-2 text-xs sm:text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg transition border border-slate-700">
+                    <i class="fa-solid fa-file-lines text-blue-400"></i>
+                    <span class="hidden sm:inline">Project Documentation</span>
+                </button>
+                <div class="h-6 w-px bg-slate-800"></div>
+                <div id="streakBadge" class="flex items-center space-x-1.5 bg-amber-500/10 text-amber-400 px-3 py-1.5 rounded-full text-xs font-semibold border border-amber-500/20">
+                    <i class="fa-solid fa-fire"></i>
+                    <span>Streak: <span id="streakCount">0</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Controls & Topic Selector -->
+        <aside class="lg:col-span-4 space-y-6">
+            <!-- Topic Selection Card -->
+            <div class="glass-card rounded-2xl p-5 shadow-sm border border-slate-200">
+                <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-blue-600"></i> Select Core Topic
+                </h2>
+                <div class="space-y-2.5" id="topicList">
+                    <!-- Topics will be dynamically rendered or static active selection -->
+                    <button onclick="selectTopic('quadratic')" id="btn-quadratic" class="topic-btn w-full text-left p-3.5 rounded-xl border-2 transition-all flex items-center justify-between border-blue-600 bg-blue-50/60 font-semibold text-blue-900 shadow-sm">
+                        <div>
+                            <div class="font-semibold">Quadratic Equations</div>
+                            <div class="text-xs text-slate-500 font-normal mt-0.5">$ax^2 + bx + c = 0$</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-blue-600 text-sm"></i>
+                    </button>
+                    
+                    <button onclick="selectTopic('linear_systems')" id="btn-linear_systems" class="topic-btn w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-between text-slate-700 bg-white">
+                        <div>
+                            <div class="font-semibold">Systems of Linear Equations</div>
+                            <div class="text-xs text-slate-500 font-normal mt-0.5">2x + y = 7, x - y = 2</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-400 text-sm"></i>
+                    </button>
+
+                    <button onclick="selectTopic('derivatives')" id="btn-derivatives" class="topic-btn w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-between text-slate-700 bg-white">
+                        <div>
+                            <div class="font-semibold">Calculus: Derivatives</div>
+                            <div class="text-xs text-slate-500 font-normal mt-0.5">$\frac{d}{dx}[f(x)]$</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-400 text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Differentiation Level Selector -->
+            <div class="glass-card rounded-2xl p-5 shadow-sm border border-slate-200">
+                <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-blue-600"></i> Differentiation Tier
+                </h2>
+                
+                <div class="space-y-3">
+                    <!-- Level 1 -->
+                    <button onclick="selectLevel(1)" id="lvl-btn-1" class="level-btn w-full text-left p-3.5 rounded-xl border-2 border-emerald-500 bg-emerald-50/60 transition-all">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-200 text-emerald-800">LEVEL 1</span>
+                            <span class="text-xs text-emerald-700 font-medium"><i class="fa-solid fa-seedling mr-1"></i>Foundation</span>
+                        </div>
+                        <p class="text-xs text-slate-600">Guided breakdown, scaffolded steps, integers, and detailed explicit hints.</p>
+                    </button>
+
+                    <!-- Level 2 -->
+                    <button onclick="selectLevel(2)" id="lvl-btn-2" class="level-btn w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white transition-all">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">LEVEL 2</span>
+                            <span class="text-xs text-blue-700 font-medium"><i class="fa-solid fa-graduation-cap mr-1"></i>Standard</span>
+                        </div>
+                        <p class="text-xs text-slate-600">Grade-level mathematical problem solving with standard algebraic manipulation.</p>
+                    </button>
+
+                    <!-- Level 3 -->
+                    <button onclick="selectLevel(3)" id="lvl-btn-3" class="level-btn w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white transition-all">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-800">LEVEL 3</span>
+                            <span class="text-xs text-purple-700 font-medium"><i class="fa-solid fa-bolt mr-1"></i>Advanced</span>
+                        </div>
+                        <p class="text-xs text-slate-600">Real-world applications, multi-step logic challenges, higher level abstractions.</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Engine Custom Prompt Box -->
+            <div class="glass-card rounded-2xl p-5 shadow-sm border border-slate-200 bg-gradient-to-br from-slate-900 to-indigo-950 text-white">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-indigo-300 uppercase tracking-wider">AI Problem Generator</span>
+                    <span class="text-[10px] bg-indigo-500/30 text-indigo-200 px-2 py-0.5 rounded-full border border-indigo-400/30">Gemini-3 Flash API</span>
+                </div>
+                <p class="text-xs text-slate-300 mb-4">Generate custom tailored problems dynamically using artificial intelligence.</p>
+                <button onclick="generateAIProblem()" id="generateBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium text-sm py-2.5 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Generate New AI Problem</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Right Column: Interactive Workspace -->
+        <section class="lg:col-span-8 flex flex-col space-y-6">
+
+            <!-- Problem Display Box -->
+            <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 flex-grow relative overflow-hidden">
+                <!-- Header Status -->
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4 mb-4">
+                    <div class="flex items-center space-x-2">
+                        <span id="displayTopicBadge" class="text-xs font-bold bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">
+                            Quadratic Equations
+                        </span>
+                        <span id="displayLevelBadge" class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-md">
+                            Level 1: Foundation
+                        </span>
+                    </div>
+                    <div class="text-xs text-slate-400 flex items-center gap-1">
+                        <i class="fa-regular fa-clock"></i> Interactive Session
+                    </div>
+                </div>
+
+                <!-- Problem Content Container -->
+                <div class="space-y-4 min-h-[160px]">
+                    <h3 id="problemTitle" class="text-lg font-bold text-slate-800">
+                        Find the roots of the quadratic equation
+                    </h3>
+                    
+                    <div id="problemMath" class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 text-xl text-center font-medium text-slate-900 shadow-inner my-3">
+                        $$x^2 - 5x + 6 = 0$$
+                    </div>
+
+                    <p id="problemContext" class="text-sm text-slate-600 leading-relaxed">
+                        Identify two numbers that add up to -5 and multiply to give +6 to factorize the equation into $(x - a)(x - b) = 0$.
+                    </p>
+                </div>
+
+                <!-- Guided Inputs / Answer Input Box -->
+                <div class="mt-6 pt-6 border-t border-slate-100">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2" id="answerLabel">
+                        Your Answer
+                    </label>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="text" id="userInput" placeholder="e.g. x = 2, 3 or 2, 3" 
+                            class="flex-grow px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-800 text-sm transition outline-none">
+                        <button onclick="checkAnswer()" id="submitAnswerBtn" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-6 py-3 rounded-xl transition shadow-sm flex items-center justify-center space-x-2">
+                            <span>Submit Answer</span>
+                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> Format for multiple roots: comma separated values (e.g. 2, 3)</p>
+                </div>
+
+                <!-- Feedback Banner -->
+                <div id="feedbackContainer" class="hidden mt-4 p-4 rounded-xl text-sm flex items-start space-x-3">
+                    <i id="feedbackIcon" class="text-lg mt-0.5"></i>
+                    <div id="feedbackText" class="space-y-1"></div>
+                </div>
+            </div>
+
+            <!-- AI Scaffolding & Hints Accordion -->
+            <div class="glass-card rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-md font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i> Differentiated Guidance & Hints
+                    </h3>
+                    <span class="text-xs text-slate-400">Scaffolded Assistance</span>
+                </div>
+
+                <!-- Progressive Hints Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <button onclick="requestHint(1)" class="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition flex items-center justify-between">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="w-6 h-6 rounded-full bg-amber-100 text-amber-700 text-xs font-bold flex items-center justify-center">1</span>
+                            <span class="text-xs font-semibold text-slate-700">Conceptual Hint</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                    </button>
+
+                    <button onclick="requestHint(2)" class="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition flex items-center justify-between">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">2</span>
+                            <span class="text-xs font-semibold text-slate-700">Step-by-Step Breakdown</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Dynamic Hint Response Container -->
+                <div id="hintDisplayBox" class="hidden p-4 rounded-xl bg-amber-50/70 border border-amber-200/80 text-sm text-slate-700">
+                    <div class="flex items-center justify-between font-bold text-amber-900 text-xs uppercase mb-2">
+                        <span id="hintTitle"><i class="fa-solid fa-lightbulb text-amber-600 mr-1.5"></i> Hint Level 1</span>
+                        <button onclick="closeHint()" class="text-amber-700 hover:text-amber-900 text-xs"><i class="fa-solid fa-xmark"></i> Close</button>
+                    </div>
+                    <div id="hintContent" class="text-xs leading-relaxed space-y-2"></div>
+                </div>
+
+                <!-- AI Full Solution Explainer Button -->
+                <div class="pt-2">
+                    <button onclick="getAISolutionExplanation()" class="w-full py-2.5 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl font-medium text-xs transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <span>Ask AI Teacher for Detailed Level-Tailored Explanation</span>
+                    </button>
+                </div>
+
+                <div id="aiExplanationBox" class="hidden p-4 bg-slate-900 text-slate-100 rounded-xl text-xs leading-relaxed space-y-3 custom-scrollbar max-h-60 overflow-y-auto border border-slate-800">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2 text-indigo-400 font-semibold">
+                        <span><i class="fa-solid fa-robot mr-1.5"></i> AI Adaptive Math Tutor Response</span>
+                        <button onclick="document.getElementById('aiExplanationBox').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div id="aiExplanationText" class="space-y-2"></div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Project Documentation / Report Modal -->
+    <div id="reportModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center border-b border-slate-800">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-book-bookmark text-blue-400 text-lg"></i>
+                    <div>
+                        <h3 class="font-bold text-base">Assignment Report & Technical Overview</h3>
+                        <p class="text-xs text-slate-400">AI for Differentiated Learning Project Documentation</p>
+                    </div>
+                </div>
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-white transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Modal Body Content -->
+            <div class="p-6 overflow-y-auto space-y-6 text-slate-700 text-xs sm:text-sm custom-scrollbar">
+                
+                <!-- Section 1 -->
+                <div>
+                    <h4 class="font-bold text-slate-900 text-base mb-2 border-b pb-1 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded bg-blue-100 text-blue-700 text-xs flex items-center justify-center font-bold">1</span>
+                        Core Mathematics Topic & Differentiation Strategy
+                    </h4>
+                    <p class="leading-relaxed text-slate-600 mb-2">
+                        This web application dynamically differentiates mathematics learning across three core topics: 
+                        <strong>Quadratic Equations</strong>, <strong>Systems of Linear Equations</strong>, and <strong>Calculus Derivatives</strong>.
+                    </p>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-600">
+                        <li><strong>Level 1 (Foundation):</strong> Uses integer coefficients, detailed step-by-step scaffolding, visual breakdown hints, and explicit guidance to build basic procedural understanding.</li>
+                        <li><strong>Level 2 (Standard):</strong> Uses grade-standard curriculum complexity (fractional roots, standard algebra) requiring standard problem-solving techniques without extra scaffolding.</li>
+                        <li><strong>Level 3 (Advanced):</strong> Introduces real-world applications (physics trajectories, economic optimization, projectile motion) requiring multi-step logic modeling.</li>
+                    </ul>
+                </div>
+
+                <!-- Section 2 -->
+                <div>
+                    <h4 class="font-bold text-slate-900 text-base mb-2 border-b pb-1 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded bg-blue-100 text-blue-700 text-xs flex items-center justify-center font-bold">2</span>
+                        System Prompts & AI Architecture
+                    </h4>
+                    <p class="leading-relaxed text-slate-600 mb-3">
+                        The application communicates directly with the Google Gemini API (`gemini-3-flash-preview`) using structured system prompts designed for educational scaffolding:
+                    </p>
+                    <div class="bg-slate-900 text-slate-200 p-3.5 rounded-xl font-mono text-[11px] leading-relaxed overflow-x-auto border border-slate-800">
+                        <div class="text-slate-400 border-b border-slate-800 pb-1 mb-1">// System Instruction Sample</div>
+                        "You are an expert Math Pedagogy AI. Your task is to generate differentiated math problems based on target level: [Level 1/2/3]. <br>
+                        Level 1 requires simplified steps and explicit guidance. <br>
+                        Level 2 requires standard curriculum level problems. <br>
+                        Level 3 requires real-world applied math challenges with multi-step reasoning. <br>
+                        Return response in strictly formatted JSON: { title, equation, context, answer, hints }."
+                    </div>
+                </div>
+
+                <!-- Section 3 -->
+                <div>
+                    <h4 class="font-bold text-slate-900 text-base mb-2 border-b pb-1 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded bg-blue-100 text-blue-700 text-xs flex items-center justify-center font-bold">3</span>
+                        UI/UX & Pedagogical Impact
+                    </h4>
+                    <p class="leading-relaxed text-slate-600">
+                        The web app uses KaTeX for real-time mathematical expression rendering, Tailwind CSS for clean layout, and immediate AI feedback. Students receive instant level-adjusted support, avoiding cognitive overload while maintaining engagement through positive reinforcement.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+                <button onclick="closeReportModal()" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800 transition">
+                    Close Documentation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- State Management ---
+        const state = {
+            currentTopic: 'quadratic',
+            currentLevel: 1,
+            streak: 0,
+            currentProblem: null
+        };
+
+        // Static Problem Repository (Fallback & Pre-loaded differentiated math problems)
+        const mathProblems = {
+            quadratic: {
+                1: {
+                    title: "Find the roots of the quadratic equation",
+                    equation: "x^2 - 5x + 6 = 0",
+                    context: "Identify two integers that add up to -5 and multiply to give +6 to factorize the equation into $(x - a)(x - b) = 0$.",
+                    answer: "2, 3",
+                    accepted: ["2,3", "3,2", "x=2, x=3", "x=2,3", "2, 3"],
+                    hints: [
+                        "Look for two numbers whose product is +6 and whose sum is -5. (Hint: -2 and -3)",
+                        "Write in factored form: $(x - 2)(x - 3) = 0$. Set each factor equal to zero to solve for x."
+                    ]
+                },
+                2: {
+                    title: "Solve the quadratic equation using factoring or quadratic formula",
+                    equation: "2x^2 + 5x - 3 = 0",
+                    context: "Factor by grouping or use $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$ where $a=2, b=5, c=-3$.",
+                    answer: "0.5, -3",
+                    accepted: ["0.5, -3", "-3, 0.5", "1/2, -3", "-3, 1/2", "x=0.5, x=-3"],
+                    hints: [
+                        "Multiply $a \\times c = 2 \\times (-3) = -6$. Find factors of -6 that sum to 5: 6 and -1.",
+                        "Rewrite as $2x^2 + 6x - x - 3 = 0 \\implies 2x(x + 3) - 1(x + 3) = 0 \\implies (2x - 1)(x + 3) = 0$."
+                    ]
+                },
+                3: {
+                    title: "Real-World Trajectory Application",
+                    equation: "h(t) = -5t^2 + 20t + 15 = 0",
+                    context: "A projectile is launched from a height of 15m with initial velocity 20 m/s. Find the exact time $t$ (in seconds) when the projectile strikes the ground ($h(t) = 0$). Round to 2 decimal places.",
+                    answer: "4.65",
+                    accepted: ["4.65", "t=4.65", "4.65s"],
+                    hints: [
+                        "Simplify the equation by dividing by -5: $t^2 - 4t - 3 = 0$.",
+                        "Use the quadratic formula: $t = \\frac{4 \\pm \\sqrt{16 - 4(1)(-3)}}{2} = \\frac{4 \\pm \\sqrt{28}}{2} = 2 + \\sqrt{7} \\approx 4.65$ seconds (ignore negative time)."
+                    ]
+                }
+            },
+            linear_systems: {
+                1: {
+                    title: "Solve the system of linear equations",
+                    equation: "\\begin{cases} x + y = 6 \\\\ x - y = 2 \\end{cases}",
+                    context: "Add the two equations directly to eliminate $y$ and solve for $x$ easily.",
+                    answer: "4, 2",
+                    accepted: ["4, 2", "4,2", "x=4, y=2", "(4,2)"],
+                    hints: [
+                        "Add equation 1 and equation 2 together: $(x + y) + (x - y) = 6 + 2 \\implies 2x = 8$.",
+                        "Since $2x = 8$, $x = 4$. Substitute $x = 4$ back into $4 + y = 6$ to find $y = 2$."
+                    ]
+                },
+                2: {
+                    title: "Solve the system using elimination or substitution",
+                    equation: "\\begin{cases} 3x + 2y = 12 \\\\ 5x - 2y = 4 \\end{cases}",
+                    context: "Find the coordinate point $(x, y)$ that satisfies both equations simultaneously.",
+                    answer: "2, 3",
+                    accepted: ["2, 3", "2,3", "x=2, y=3", "(2,3)"],
+                    hints: [
+                        "Notice the coefficients of $y$ are opposite (+2 and -2). Add the two equations directly to cancel $y$.",
+                        "$8x = 16 \\implies x = 2$. Substitute $x=2$ into $3(2) + 2y = 12 \\implies 6 + 2y = 12 \\implies y = 3$."
+                    ]
+                },
+                3: {
+                    title: "Applied Economics: Break-Even Supply & Demand",
+                    equation: "\\begin{cases} P = 50 - 2Q \\quad \\text{(Demand)} \\\\ P = 10 + 3Q \\quad \\text{(Supply)} \\end{cases}",
+                    context: "Find the equilibrium quantity ($Q$) and price ($P$) where supply equals demand.",
+                    answer: "8, 34",
+                    accepted: ["8, 34", "8,34", "Q=8, P=34", "(8,34)", "8, 34"],
+                    hints: [
+                        "Set the two price expressions equal to each other: $50 - 2Q = 10 + 3Q$.",
+                        "Rearrange: $5Q = 40 \\implies Q = 8$. Substitute $Q=8$ to get $P = 10 + 3(8) = 34$."
+                    ]
+                }
+            },
+            derivatives: {
+                1: {
+                    title: "Find the first derivative $f'(x)$",
+                    equation: "f(x) = 3x^2 + 4x - 5",
+                    context: "Apply the Power Rule: $\\frac{d}{dx}[x^n] = n x^{n-1}$ for each term individually.",
+                    answer: "6x + 4",
+                    accepted: ["6x+4", "6x + 4", "f'(x)=6x+4"],
+                    hints: [
+                        "For $3x^2$, bring down power 2: $3 \\cdot 2x^{2-1} = 6x$.",
+                        "For $4x$, derivative is $4$. For constant $-5$, derivative is $0$. Result: $6x + 4$."
+                    ]
+                },
+                2: {
+                    title: "Find the derivative using Product or Chain Rule",
+                    equation: "f(x) = (2x + 1)^3",
+                    context: "Apply the Chain Rule: $\\frac{d}{dx}[g(x)^n] = n(g(x))^{n-1} \\cdot g'(x)$.",
+                    answer: "6(2x + 1)^2",
+                    accepted: ["6(2x+1)^2", "6(2x + 1)^2", "24x^2 + 24x + 6"],
+                    hints: [
+                        "Outer function derivative: $3(2x + 1)^2$. Inner function derivative: $\\frac{d}{dx}(2x + 1) = 2$.",
+                        "Multiply them: $3(2x + 1)^2 \\cdot 2 = 6(2x + 1)^2$."
+                    ]
+                },
+                3: {
+                    title: "Calculus Optimization in Manufacturing",
+                    equation: "V(x) = 4x^3 - 40x^2 + 100x",
+                    context: "Find the value of $x$ that maximizes volume $V(x)$ by finding stationary points ($V'(x) = 0$).",
+                    answer: "1.67",
+                    accepted: ["1.67", "5/3", "x=1.67", "1.67 or 5/3"],
+                    hints: [
+                        "Take the derivative: $V'(x) = 12x^2 - 80x + 100 = 0$. Divide by 4: $3x^2 - 20x + 25 = 0$.",
+                        "Factor: $(3x - 5)(x - 5) = 0 \\implies x = 5/3 \\approx 1.67$ or $x = 5$. Test second derivative to confirm maximum."
+                    ]
+                }
+            }
+        };
+
+        // --- Core Functions ---
+
+        window.onload = function() {
+            loadProblem();
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ]
+            });
+        };
+
+        function selectTopic(topicKey) {
+            state.currentTopic = topicKey;
+            
+            // Update topic buttons UI
+            document.querySelectorAll('.topic-btn').forEach(btn => {
+                btn.className = "topic-btn w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-between text-slate-700 bg-white";
+                btn.querySelector('i').className = "fa-solid fa-chevron-right text-slate-400 text-sm";
+            });
+
+            const activeBtn = document.getElementById(`btn-${topicKey}`);
+            if (activeBtn) {
+                activeBtn.className = "topic-btn w-full text-left p-3.5 rounded-xl border-2 transition-all flex items-center justify-between border-blue-600 bg-blue-50/60 font-semibold text-blue-900 shadow-sm";
+                activeBtn.querySelector('i').className = "fa-solid fa-chevron-right text-blue-600 text-sm";
+            }
+
+            loadProblem();
+        }
+
+        function selectLevel(levelNum) {
+            state.currentLevel = levelNum;
+
+            // Update Level Buttons UI
+            const borderColors = { 1: 'border-emerald-500 bg-emerald-50/60', 2: 'border-blue-500 bg-blue-50/60', 3: 'border-purple-500 bg-purple-50/60' };
+
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`lvl-btn-${i}`);
+                if (i === levelNum) {
+                    btn.className = `level-btn w-full text-left p-3.5 rounded-xl border-2 ${borderColors[i]} transition-all shadow-sm`;
+                } else {
+                    btn.className = "level-btn w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white transition-all";
+                }
+            }
+
+            loadProblem();
+        }
+
+        function loadProblem() {
+            closeHint();
+            document.getElementById('feedbackContainer').classList.add('hidden');
+            document.getElementById('aiExplanationBox').classList.add('hidden');
+            document.getElementById('userInput').value = '';
+
+            const problem = mathProblems[state.currentTopic][state.currentLevel];
+            state.currentProblem = problem;
+
+            // Update Badges & Titles
+            const topicNames = { quadratic: 'Quadratic Equations', linear_systems: 'Systems of Linear Equations', derivatives: 'Calculus: Derivatives' };
+            const levelNames = { 
+                1: { text: 'Level 1: Foundation', class: 'bg-emerald-100 text-emerald-800' },
+                2: { text: 'Level 2: Standard', class: 'bg-blue-100 text-blue-800' },
+                3: { text: 'Level 3: Advanced', class: 'bg-purple-100 text-purple-800' }
+            };
+
+            document.getElementById('displayTopicBadge').innerText = topicNames[state.currentTopic];
+            document.getElementById('displayLevelBadge').innerText = levelNames[state.currentLevel].text;
+            document.getElementById('displayLevelBadge').className = `text-xs font-bold px-2.5 py-1 rounded-md ${levelNames[state.currentLevel].class}`;
+
+            document.getElementById('problemTitle').innerText = problem.title;
+            document.getElementById('problemMath').innerHTML = `$$${problem.equation}$$`;
+            document.getElementById('problemContext').innerText = problem.context;
+
+            // Re-render Math Formulas using KaTeX
+            setTimeout(() => {
+                renderMathInElement(document.getElementById('problemMath'), {
+                    delimiters: [{left: '$$', right: '$$', display: true}]
+                });
+                renderMathInElement(document.getElementById('problemContext'), {
+                    delimiters: [{left: '$', right: '$', display: false}]
+                });
+            }, 50);
+        }
+
+        function checkAnswer() {
+            const input = document.getElementById('userInput').value.trim().toLowerCase().replace(/\s+/g, '');
+            const feedbackBox = document.getElementById('feedbackContainer');
+            const feedbackIcon = document.getElementById('feedbackIcon');
+            const feedbackText = document.getElementById('feedbackText');
+
+            if (!input) {
+                showFeedback(false, "Please enter an answer before submitting.");
+                return;
+            }
+
+            const isCorrect = state.currentProblem.accepted.some(ans => ans.toLowerCase().replace(/\s+/g, '') === input);
+
+            if (isCorrect) {
+                state.streak += 1;
+                document.getElementById('streakCount').innerText = state.streak;
+                showFeedback(true, `
+                    <div class="font-bold text-emerald-900">Great Job! Correct Answer!</div>
+                    <div class="text-xs text-emerald-700 mt-0.5">Your answer matches the expected mathematical target for Level ${state.currentLevel}.</div>
+                `);
+            } else {
+                state.streak = 0;
+                document.getElementById('streakCount').innerText = state.streak;
+                showFeedback(false, `
+                    <div class="font-bold text-rose-900">Not quite right.</div>
+                    <div class="text-xs text-rose-700 mt-0.5">Double check your steps or request a Level-adapted hint below!</div>
+                `);
+            }
+        }
+
+        function showFeedback(isSuccess, messageHtml) {
+            const container = document.getElementById('feedbackContainer');
+            const icon = document.getElementById('feedbackIcon');
+            const text = document.getElementById('feedbackText');
+
+            container.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'bg-rose-50', 'border-rose-200');
+            
+            if (isSuccess) {
+                container.classList.add('bg-emerald-50', 'border', 'border-emerald-200');
+                icon.className = 'fa-solid fa-circle-check text-emerald-600 text-lg mt-0.5';
+            } else {
+                container.classList.add('bg-rose-50', 'border', 'border-rose-200');
+                icon.className = 'fa-solid fa-circle-xmark text-rose-600 text-lg mt-0.5';
+            }
+
+            text.innerHTML = messageHtml;
+        }
+
+        function requestHint(hintLevel) {
+            const hintBox = document.getElementById('hintDisplayBox');
+            const hintTitle = document.getElementById('hintTitle');
+            const hintContent = document.getElementById('hintContent');
+
+            const hintText = state.currentProblem.hints[hintLevel - 1] || "No additional hints available.";
+            
+            hintTitle.innerHTML = `<i class="fa-solid fa-lightbulb text-amber-600 mr-1.5"></i> Hint Level ${hintLevel} (${state.currentLevel === 1 ? 'Foundation Guidance' : state.currentLevel === 2 ? 'Standard Hint' : 'Advanced Hint'})`;
+            hintContent.innerText = hintText;
+
+            hintBox.classList.remove('hidden');
+
+            setTimeout(() => {
+                renderMathInElement(hintContent, {
+                    delimiters: [{left: '$', right: '$', display: false}]
+                });
+            }, 50);
+        }
+
+        function closeHint() {
+            document.getElementById('hintDisplayBox').classList.add('hidden');
+        }
+
+        // --- Gemini AI Direct Integration ---
+        async function getAISolutionExplanation() {
+            const explanationBox = document.getElementById('aiExplanationBox');
+            const explanationText = document.getElementById('aiExplanationText');
+
+            explanationBox.classList.remove('hidden');
+            explanationText.innerHTML = `<div class="flex items-center space-x-2 text-indigo-300"><i class="fa-solid fa-spinner fa-spin"></i> <span>AI is generating level-adapted explanation...</span></div>`;
+
+            const prompt = `Act as an expert math tutor. Explain how to solve this math problem tailored specifically for a Level ${state.currentLevel} student (${state.currentLevel === 1 ? 'simplified step-by-step guidance' : state.currentLevel === 2 ? 'standard curriculum approach' : 'deep concept & application explanation'}).
+            Problem Title: ${state.currentProblem.title}
+            Equation: ${state.currentProblem.equation}
+            Context: ${state.currentProblem.context}
+            Correct Answer: ${state.currentProblem.answer}
+            Keep response concise, clear, and structured in 3 distinct steps with LaTeX formulas ($...$).`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
+
+                const data = await response.json();
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    const text = data.candidates[0].content.parts[0].text;
+                    explanationText.innerHTML = `<div class="prose prose-invert text-xs">${text.replace(/\n/g, '<br>')}</div>`;
+                    renderMathInElement(explanationText, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false}
+                        ]
+                    });
+                } else {
+                    explanationText.innerText = "Error: Unable to generate AI explanation at this time.";
+                }
+            } catch (error) {
+                explanationText.innerHTML = `<span class="text-rose-400">Error connecting to AI service. Displaying standard step-by-step guidance: <br>${state.currentProblem.hints.join('<br>')}</span>`;
+            }
+        }
+
+        async function generateAIProblem() {
+            const btn = document.getElementById('generateBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
+            btn.disabled = true;
+
+            const prompt = `Generate a unique mathematical problem for Topic: ${state.currentTopic} at Difficulty Level: ${state.currentLevel}.
+            Return JSON format only:
+            {
+                "title": "Short descriptive title",
+                "equation": "LaTeX formula string without $$",
+                "context": "Context or instructions for the student",
+                "answer": "Simple numerical answer or roots",
+                "hints": ["Hint 1", "Hint 2"]
+            }`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+
+                const data = await response.json();
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    const generated = JSON.parse(data.candidates[0].content.parts[0].text);
+                    state.currentProblem = {
+                        title: generated.title,
+                        equation: generated.equation,
+                        context: generated.context,
+                        answer: generated.answer,
+                        accepted: [generated.answer, generated.answer.replace(/\s+/g, '')],
+                        hints: generated.hints || ["Solve using standard formula.", "Check your arithmetic."]
+                    };
+                    
+                    document.getElementById('problemTitle').innerText = state.currentProblem.title;
+                    document.getElementById('problemMath').innerHTML = `$$${state.currentProblem.equation}$$`;
+                    document.getElementById('problemContext').innerText = state.currentProblem.context;
+                    
+                    setTimeout(() => {
+                        renderMathInElement(document.getElementById('problemMath'), { delimiters: [{left: '$$', right: '$$', display: true}] });
+                        renderMathInElement(document.getElementById('problemContext'), { delimiters: [{left: '$', right: '$', display: false}] });
+                    }, 50);
+                }
+            } catch (err) {
+                alert("Failed to generate AI problem. Loaded standard curated problem instead.");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Modal Handlers
+        function openReportModal() {
+            document.getElementById('reportModal').classList.remove('hidden');
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
