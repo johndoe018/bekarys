@@ -1,0 +1,98 @@
+/*
+ * AI Math Differentiator — custom stylesheet
+ * Designed to complement Tailwind CSS used in index.html.
+ * Keep style.css next to index.html in your GitHub repository.
+ */
+
+:root {
+  color-scheme: light;
+  --focus-ring: #2563eb;
+  --selection-bg: #dbeafe;
+}
+
+::selection {
+  background: var(--selection-bg);
+  color: #1e3a8a;
+}
+
+/* Mathematical notation */
+.katex-display {
+  margin: 0.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+#problemMath {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Shared frosted-glass panel */
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* Slim custom scrollbars for explanations and modal content */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* Keyboard navigation and form clarity */
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* Prevent long formulas and explanation text from widening cards */
+#problemContext,
+#hintContent,
+#aiExplanationText {
+  overflow-wrap: anywhere;
+}
+
+/* Comfortable interaction on smaller screens */
+@media (max-width: 640px) {
+  #problemMath {
+    font-size: 1.05rem;
+  }
+
+  #reportModal > div {
+    max-height: 92vh;
+  }
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
